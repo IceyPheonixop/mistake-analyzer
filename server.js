@@ -145,7 +145,7 @@ app.delete('/api/reset/:username', async (req, res) => {
 });
 
 // Catch-all route to serve the frontend (index.html)
-app.get('*', (req, res) => {
+app.get('/{*splat}', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
