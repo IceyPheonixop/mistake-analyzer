@@ -171,4 +171,12 @@ app.delete('/api/reset/:username', async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 });
-app.listen(3000, () => console.log('🚀 Server running on http://localhost:3000'));
+// Use environment port or fallback for local development
+const PORT = process.env.PORT || 3000;
+
+if (process.env.NODE_ENV !== 'production') {
+  app.listen(PORT, () => console.log(`🚀 Server running on http://localhost:${PORT}`));
+}
+
+// Export the Express app for Vercel's serverless runtime
+module.exports = app;
