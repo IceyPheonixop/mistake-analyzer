@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Dashboard</title>
+        <link rel="stylesheet" href="style.css">
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script>
+    </head>
+<body>
+    <div class="container">
+        <div class="nav-bar">
+            <div style="text-align: left;">
+                <h2 id="welcome-msg" style="margin:0;">Welcome back</h2>
+                <small style="opacity: 0.6;">Let's learn something new today.</small>
+            </div>
+            <button onclick="logout()" class="secondary" style="width: auto; padding: 10px 25px;">Logout</button>
+        </div>
+
+        <div id="student-view" class="hidden">
+            <div class="grid">
+                <div class="card" style="display: flex; flex-direction: column; justify-content: center;">
+                    <h3>📝 Active Quiz Challenge</h3>
+                    <div id="quiz-area">
+                        <div style="margin-bottom: 20px;">
+                            <span id="q-topic" style="background:var(--accent); color:#000; padding:4px 10px; border-radius:4px; font-weight:bold; font-size:0.8rem;">TOPIC</span>
+                        </div>
+                        <h2 id="q-text" style="font-size: 1.8rem; margin: 20px 0;">Loading...</h2>
+                        <div id="options-container" style="display: grid; gap: 10px;"></div>
+                    </div>
+                </div>
+
+                <div style="display: flex; flex-direction: column; gap: 20px;">
+                    <div class="card">
+                        <h3>🏆 Top Performers</h3>
+                        <div id="leaderboard">Loading...</div>
+                    </div>
+                    <div class="card">
+                        <h3>⚠️ Focus Areas</h3>
+                        <div id="mistake-history" style="display: flex; flex-wrap: wrap;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="teacher-view" class="hidden">
+            
+            <div id="teacher-dashboard-content">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h3 style="margin: 0;">📊 Class Insights</h3>
+                    <button onclick="toggleTeacherView('form')" style="width: auto; padding: 10px 20px; background: var(--accent); color: black; border-radius: 8px;">
+                        ➕ Add New Question
+                    </button>
+                </div>
+                
+                <div class="card">
+                    <div style="position: relative; height: 350px; display: flex; justify-content: center;">
+                        <canvas id="mistakeChart"></canvas>
+                    </div>
+                    <div id="topic-breakdown" style="margin-top: 20px; opacity: 0.8; display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px;"></div>
+                </div>
+            </div>
+
+            <div id="teacher-form-content" class="hidden">
+                <div style="margin-bottom: 20px; text-align: left;">
+                    <button onclick="toggleTeacherView('dashboard')" class="secondary" style="width: auto; padding: 8px 15px; border-radius: 8px;">
+                        ⬅ Back to Dashboard
+                    </button>
+                </div>
+                
+                <div class="card" style="max-width: 600px; margin: 0 auto; text-align: left;">
+                    <h3 style="text-align: center;">➕ Create New Challenge</h3>
+                    
+                    <label style="font-size: 0.9rem; opacity: 0.8; display: block; margin-bottom: 5px;">Subject</label>
+                    <select id="new-topic">
+                        <option>Physics</option>
+                        <option>Chemistry</option>
+                        <option>Maths</option>
+                        <option>Computer Science</option>
+                    </select>
+
+                    <label style="font-size: 0.9rem; opacity: 0.8; display: block; margin-bottom: 5px;">Question</label>
+                    <input type="text" id="new-q-text" placeholder="Type the question here...">
+
+                    <label style="font-size: 0.9rem; opacity: 0.8; display: block; margin-bottom: 5px;">Options (Select Correct Answer)</label>
+                    <div class="option-row" style="display: flex; align-items: center; margin-bottom: 10px;">
+                        <input type="radio" name="correct" value="0" style="width: 20px; margin-right: 10px;">
+                        <input type="text" id="opt-0" placeholder="Option A" style="margin: 0;">
+                    </div>
+                    <div class="option-row" style="display: flex; align-items: center; margin-bottom: 10px;">
+                        <input type="radio" name="correct" value="1" style="width: 20px; margin-right: 10px;">
+                        <input type="text" id="opt-1" placeholder="Option B" style="margin: 0;">
+                    </div>
+                    <div class="option-row" style="display: flex; align-items: center; margin-bottom: 10px;">
+                        <input type="radio" name="correct" value="2" style="width: 20px; margin-right: 10px;">
+                        <input type="text" id="opt-2" placeholder="Option C" style="margin: 0;">
+                    </div>
+                    <div class="option-row" style="display: flex; align-items: center; margin-bottom: 10px;">
+                        <input type="radio" name="correct" value="3" style="width: 20px; margin-right: 10px;">
+                        <input type="text" id="opt-3" placeholder="Option D" style="margin: 0;">
+                    </div>
+
+                    <button onclick="postQuestion()">Publish Question</button>
+                </div>
+            </div>
+            
+        </div> </div>
+    <script src="app.js"></script>
+</body>
+</html>
