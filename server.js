@@ -14,7 +14,9 @@ app.use(cors());
 app.use(express.static('public')); // Serves the frontend
 
 // Database Connection (Fixed for Mongoose v6+)
-mongoose.connect('mongodb://127.0.0.1:27017/errorSleuth')
+const uri = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/errorSleuth';
+
+mongoose.connect(uri)
     .then(() => console.log("✅ MongoDB Connected"))
     .catch(err => console.error("❌ DB Error:", err));
 
