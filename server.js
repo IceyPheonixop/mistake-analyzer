@@ -2,7 +2,7 @@ const express = require('express');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const cors = require('cors');
-const path = require('path'); // Added for reliable directory resolution
+const path = require('path');
 
 // Models
 const User = require('./models/User');
@@ -13,15 +13,52 @@ const app = express();
 app.use(bodyParser.json());
 app.use(cors());
 
-// Serve static frontend files from the public folder using an absolute path
+// Serve static frontend files from the public folder
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Database Connection
+// Database Connection URI
 const uri = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/errorSleuth';
 
-mongoose.connect(uri)
-    .then(() => console.log("✅ MongoDB Connected"))
-    .catch(err => console.error("❌ DB Error:", err));
+// Cached connection promise for Vercel serverless lifecycle
+let cached = global.mongoose;
+if (!cached) {
+  cached = global.mongoose = { conn: null, promise: null };
+}
+
+async function connectToDatabase() {
+  if (cached.conn) {
+    return cached.conn;
+  }
+
+  if (!cached.promise) {
+    cached.promise = mongoose.connect(uri, {
+      bufferCommands: false,
+    }).then((mongooseInstance) => {
+      console.log("✅ MongoDB Connected");
+      return mongooseInstance;
+    });
+  }
+
+  try {
+    cached.conn = await cached.promise;
+  } catch (e) {
+    cached.promise = null;
+    throw e;
+  }
+
+  return cached.conn;
+}
+
+// Middleware: ensure database is connected before handling any request
+app.use(async (req, res, next) => {
+  try {
+    await connectToDatabase();
+    next();
+  } catch (err) {
+    console.error("❌ DB Error:", err.message);
+    res.status(500).json({ success: false, message: "Database connection failed: " + err.message });
+  }
+});
 
 // --- API ROUTES ---
 
@@ -61,8 +98,12 @@ app.post('/api/questions', async (req, res) => {
 
 // 3. STUDENT: Get All Questions
 app.get('/api/questions', async (req, res) => {
-    const questions = await Question.find();
-    res.json(questions);
+    try {
+        const questions = await Question.find();
+        res.json(questions);
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
 });
 
 // 4. STUDENT: Submit Attempt
@@ -90,29 +131,41 @@ app.post('/api/attempt', async (req, res) => {
 
 // 5. ANALYTICS: Get Stats
 app.get('/api/analytics', async (req, res) => {
-    const attempts = await Attempt.find({ isCorrect: false });
-    
-    const mistakeCounts = {};
-    const topicCounts = {};
+    try {
+        const attempts = await Attempt.find({ isCorrect: false });
+        
+        const mistakeCounts = {};
+        const topicCounts = {};
 
-    attempts.forEach(a => {
-        mistakeCounts[a.mistakeType] = (mistakeCounts[a.mistakeType] || 0) + 1;
-        topicCounts[a.topic] = (topicCounts[a.topic] || 0) + 1;
-    });
+        attempts.forEach(a => {
+            mistakeCounts[a.mistakeType] = (mistakeCounts[a.mistakeType] || 0) + 1;
+            topicCounts[a.topic] = (topicCounts[a.topic] || 0) + 1;
+        });
 
-    res.json({ mistakeCounts, topicCounts });
+        res.json({ mistakeCounts, topicCounts });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
 });
 
 // 6. LEADERBOARD
 app.get('/api/leaderboard', async (req, res) => {
-    const topStudents = await User.find({ role: 'student' }).sort({ score: -1 }).limit(5);
-    res.json(topStudents);
+    try {
+        const topStudents = await User.find({ role: 'student' }).sort({ score: -1 }).limit(5);
+        res.json(topStudents);
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
 });
 
 // 7. STUDENT: Get History
 app.get('/api/my-mistakes/:username', async (req, res) => {
-    const attempts = await Attempt.find({ studentName: req.params.username, isCorrect: false });
-    res.json(attempts);
+    try {
+        const attempts = await Attempt.find({ studentName: req.params.username, isCorrect: false });
+        res.json(attempts);
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
 });
 
 // 8. Unanswered Questions
