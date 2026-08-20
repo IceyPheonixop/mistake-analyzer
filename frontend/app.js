@@ -2,7 +2,7 @@
 // Change this to your deployed backend URL (e.g., 'https://your-backend.vercel.app')
 const API_BASE_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
     ? 'http://localhost:5000' 
-    : 'https://your-backend-url.vercel.app'; 
+    : ' https://mistake-analyzer.onrender.com'; 
 
 const currentUser = JSON.parse(localStorage.getItem('user'));
 let questions = []; // Loaded from DB
